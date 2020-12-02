@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 
 pub fn main() -> Result<()> {
-  let file = File::open("puzzle-input.dat")?;
+  let file = File::open("resources/day1.dat")?;
   let lines = BufReader::new(file).lines();
   let mut numbers: Vec<u64> = Vec::new();
   for line in lines {
@@ -18,6 +18,7 @@ pub fn main() -> Result<()> {
   Ok(())
 }
 
+// Double brute-force
 fn puzzle1(xs: &Vec<u64>) -> (u64, u64) {
   let (mut a, mut b);
   for j in 0..(xs.len() - 1) {
@@ -32,6 +33,7 @@ fn puzzle1(xs: &Vec<u64>) -> (u64, u64) {
   (0, 0)
 }
 
+// Triple brute-force
 fn puzzle2(xs: &Vec<u64>) -> (u64, u64, u64) {
   let (mut a, mut b, mut c);
   for k in 0..(xs.len() - 2) {
