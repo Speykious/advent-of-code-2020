@@ -21,9 +21,16 @@ pub fn main() -> io::Result<()> {
     }).collect();
     (a, b)
   }).collect();
+  
   let mut temp_hs = HashSet::new();
   assert!(parts.iter().all(|&(k, _)| temp_hs.insert(k)));
-  let hashmap: HashMap<_, _> = parts.into_iter().collect();
+  let hashmap: HashMap<&str, HashSet<&str>> = parts.into_iter().collect();
+  
+  part2(hashmap);
+  Ok(())
+}
+
+fn part1(hashmap: HashMap<&str, HashSet<&str>>) {
   let shiny: HashMap<&str, _> = hashmap.iter()
   .filter(|(_, hs)| hs.contains(&"shiny gold"))
   .map(|(&a, b)| (a, b))
@@ -37,5 +44,21 @@ pub fn main() -> io::Result<()> {
   println!("{:#?}", bagset);
   println!("Total number of bags able to contain shiny gold: {}", bagset.len());
   println!("Total number of bags in the total hashmap: {}", hashmap.len());
-  Ok(())
+}
+
+fn part2(hashmap: HashMap<&str, HashSet<&str>>) {
+  let shiny_gold = hashmap.get(&"shiny gold").unwrap();
+  println!("shiny gold: {:?}\n", shiny_gold);
+  for bag in shiny_gold {
+    let bagset = hashmap.get(bag).unwrap();
+    println!("{}: {:?}", bag, bagset);
+  }
+  
+}
+
+enum HashTree { Leaf(u32), Node(Vec<HashTree>) }
+fn set2tree(hashset: &HashSet<&str>, hashmap: &HashMap<&str, HashSet<&str>>) -> HashTree {
+  if hashset.is_empty() { return HashTree::Leaf(0); }
+  let sets: Vec<&HashSet<&str>> = hashset.iter().map(|s| hashmap.get(s).unwrap()).collect();
+  HashTree::Node(sets.iter().map(|&hs| set2tree(hs, hashmap)).collect())
 }
