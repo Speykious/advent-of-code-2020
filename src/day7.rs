@@ -3,7 +3,7 @@ use std::io::{self, BufRead, BufReader};
 use std::collections::{HashSet, HashMap};
 
 pub fn main() -> io::Result<()> {
-  let file = File::open("resources/day7-example.dat")?;
+  let file = File::open("resources/day7.dat")?;
   let mut lines = Vec::new();
   for line in BufReader::new(file).lines() {
     lines.push(line?);
@@ -78,7 +78,6 @@ fn fold_tree(hashtree: &HashTree) -> u32 {
     HashTree::Leaf(n) => *n,
     HashTree::Node(n, v) => {
       let sum: u32 = v.iter().map(fold_tree).sum();
-      println!("Folding ({}) {:?} => {}", n, v, n*sum);
       n + n * sum
     }
   }
