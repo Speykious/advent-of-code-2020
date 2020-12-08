@@ -26,7 +26,7 @@ pub fn main() -> io::Result<()> {
   assert!(parts.iter().all(|&(k, _)| temp_hs.insert(k)));
   let hashmap: HashMap<&str, HashSet<&str>> = parts.into_iter().collect();
   
-  part2(hashmap);
+  part2(&hashmap);
   Ok(())
 }
 
@@ -46,16 +46,15 @@ fn part1(hashmap: HashMap<&str, HashSet<&str>>) {
   println!("Total number of bags in the total hashmap: {}", hashmap.len());
 }
 
-fn part2(hashmap: HashMap<&str, HashSet<&str>>) {
+fn part2(hashmap: &HashMap<&str, HashSet<&str>>) {
   let shiny_gold = hashmap.get(&"shiny gold").unwrap();
   println!("shiny gold: {:?}\n", shiny_gold);
-  for bag in shiny_gold {
-    let bagset = hashmap.get(bag).unwrap();
-    println!("{}: {:?}", bag, bagset);
-  }
   
+  let tree: HashTree = set2tree(shiny_gold, hashmap);
+  println!("The tree: {:?}", tree);
 }
 
+#[derive(Debug)]
 enum HashTree { Leaf(u32), Node(Vec<HashTree>) }
 fn set2tree(hashset: &HashSet<&str>, hashmap: &HashMap<&str, HashSet<&str>>) -> HashTree {
   if hashset.is_empty() { return HashTree::Leaf(0); }
