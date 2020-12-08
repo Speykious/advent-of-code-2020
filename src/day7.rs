@@ -28,7 +28,7 @@ pub fn main() -> io::Result<()> {
   let mut temp_hs = HashSet::new();
   assert!(parts.iter().all(|&(k, _)| temp_hs.insert(k)));
   let hashmap: HashMap<&str, HashSet<(u32, &str)>> = parts.into_iter().collect();
-  println!("{:?}", hashmap);
+  
   part2(&hashmap);
   Ok(())
 }
