@@ -13,7 +13,6 @@ pub fn main() -> io::Result<()> {
   .map(|line| {
     let mut iter = line.split(" bags contain ");
     let (a, b) = (iter.next().unwrap(), iter.next().unwrap());
-    //let a: String = a.into();
     let b: Vec<_> = b.split(", ").collect();
     let b: HashSet<_> = b.into_iter().filter_map(|s| {
       if s == "no other bags." { return None; }
