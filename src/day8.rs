@@ -12,7 +12,7 @@ pub fn main() -> io::Result<()> {
     lines.push(line?);
   }
 
-  let data: Vec<Inst> = lines.iter()
+  let instructions: Vec<Inst> = lines.iter()
   .map(|line| {
     let mut iter = line.split_whitespace();
     let inst = iter.next().unwrap();
@@ -25,8 +25,20 @@ pub fn main() -> io::Result<()> {
     }
   }).collect();
   
-  
+  let mut i: i32 = 0;
+  let mut acc: i32 = 0;
+  let mut executed: HashSet<i32> = HashSet::new();
 
-  println!("{:?}", data);
+  while executed.insert(i) {
+    print!("(i={} acc={}) => ", i, acc);
+    match instructions[i as usize] {
+      Inst::Nop => { i += 1; print!("nop"); },
+      Inst::Acc(n) => { acc += n; i += 1; print!("acc"); },
+      Inst::Jmp(n) => { i += n; print!("jmp"); },
+    }
+    println!(" => (i={}, acc={})", i, acc);
+  }
+
+  println!("\nFinal value of the accumulator: {}", acc);
   Ok(())
 }
