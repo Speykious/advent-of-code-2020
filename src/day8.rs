@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use std::collections::{HashSet, HashMap};
 
 pub fn main() -> io::Result<()> {
   let file = File::open("resources/day8.dat")?;
@@ -9,5 +8,5 @@ pub fn main() -> io::Result<()> {
     lines.push(line?);
   }
 
-  
+  Ok(())
 }
