@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 
@@ -8,28 +9,50 @@ pub fn main() -> io::Result<()> {
     numbers.push(line?.parse().unwrap());
   }
   
-  let preamble: Vec<u64> = numbers[..25].to_vec();
-  let numbers = numbers[25..].to_vec();
-  for n in numbers {
-    if !is_sum_of_2_in(n, &preamble) {
-      println!("The answer is {}", n);
-      break;
-    }
-  }
+  let invalid = find_invalid(&numbers).unwrap();
+  println!("Invalid number: {}", invalid);
+  let range = find_range_sum(invalid, &numbers);
+  println!("Range summing up to {}: {:?}", invalid, range);
+  println!("Found weakness: {}", range.iter().min().unwrap() + range.iter().max().unwrap());
 
   Ok(())
 }
 
-fn is_sum_of_2_in(n: u64, v: &Vec<u64>) -> bool {
-  let vlen = v.len();
-  for i in 0..vlen-1 {
-    let a = v[i];
-    for j in i+1..vlen {
-      if a + v[j] == n {
+fn is_sum_of_2_in(idx: usize, v: &Vec<u64>) -> bool {
+  if idx < 25 { panic!("i has to be >= 25"); }
+  let n = v[idx];
+  let preamble = v[idx-25..idx].to_vec();
+  let plen = preamble.len();
+  for i in 0..plen-1 {
+    let a = preamble[i];
+    for j in i+1..plen {
+      if a + preamble[j] == n {
         return true;
       }
     }
   }
-
   false
+}
+
+fn find_invalid(v: &Vec<u64>) -> Option<u64> {
+  for i in 25..v.len() {
+    if !is_sum_of_2_in(i, v) {
+      return Some(v[i]);
+    }
+  }
+  None
+}
+
+fn find_range_sum(n: u64, v: &Vec<u64>) -> Vec<u64> {
+  let vlen = v.len();
+  for i in 0..vlen-1 {
+    for j in i+1..vlen {
+      let range = v[i..j].to_vec();
+      if range.iter().sum::<u64>() == n {
+        return range;
+      }
+    }
+  }
+  
+  Vec::new()
 }
