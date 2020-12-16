@@ -100,10 +100,10 @@ fn parse_move(s: String) -> Move {
 
 pub fn main() -> io::Result<()> {
   let file = File::open("resources/day12.dat")?;
-  //let mut moves: Vec<Move> = "F10\nN3\nF7\nR90\nF11".to_string().lines()
-  //                           .map(|l| parse_move(l.to_string())).collect();
-  let mut moves: Vec<Move> = BufReader::new(file).lines()
-                            .map(|l| parse_move(l.unwrap())).collect();
+  //let moves: Vec<Move> = "F10\nN3\nF7\nR90\nF11".to_string().lines()
+  //                      .map(|l| parse_move(l.to_string())).collect();
+  let moves: Vec<Move> = BufReader::new(file).lines()
+                        .map(|l| parse_move(l.unwrap())).collect();
   // Part 1
   let mut ship = Ship::new();
   for m in &moves { ship.move_ship(m); }

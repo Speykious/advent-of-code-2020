@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+use std::time::Duration;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
 use std::fmt;
@@ -114,14 +115,13 @@ pub fn main() -> io::Result<()> {
     ).collect::<Vec<_>>();
   
   let mut running = true;
-  let mut seats = 0;
   print_grid(&grid);
   while running {
     let (s, r) = automata(&mut grid);
     print_grid(&grid);
     println!("{} seats, {}running", s, if r { "" } else { "not " });
-    running = r; seats = s;
-    std::thread::sleep_ms(64);
+    running = r;
+    std::thread::sleep(Duration::from_millis(64));
   }
 
   Ok(())
