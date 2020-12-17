@@ -1,14 +1,14 @@
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
+use std::io::{self, Write, BufRead, BufReader};
 
 pub fn main() -> io::Result<()> {
-  let file = File::open("resources/day13-example.dat")?;
+  let file = File::open("resources/day13.dat")?;
   let lines: Vec<String> = BufReader::new(file).lines()
                            .map(|l| l.unwrap()).collect();
-  //let _timestamp: u64 = lines[0].parse().unwrap();
+  let _timestamp: u64 = lines[0].parse().unwrap();
 
   //part1(&lines, timestamp);
-  part2(&lines);
+  part2(&lines[1]);
 
   Ok(())
 }
@@ -35,18 +35,16 @@ fn part1(lines: &Vec<String>, timestamp: u64) {
   println!("{} * ({} - {}) = {}", early_b, timestamp, early_t, early_b * (early_t - timestamp));
 }
 
-fn part2(lines: &Vec<String>) {
-  let mut busses = lines[0].split(',')
+fn part2(line: &String) {
+  let mut busses = line.split(',')
                    .enumerate()
                    .filter(|&(_, s)| s != "x")
                    .map(|(t, s)| (t as u128, s.parse().unwrap()))
                    .collect::<Vec<(u128, u128)>>();
-  busses.sort_by(|(_, a), (_, b)| a.cmp(b));
+  busses.sort_by(|(a, _), (b, _)| a.cmp(b));
   println!("{:?}", busses);
-  println!("I activate my secret math card: the CHINESE REMAINDER THEOREM!!");
   println!("Calculating...");
-  let chinese_timestamp = chinese_remainder(&busses);
-  println!("Found the answer: \x1b[33m\x1b[1m{:?}\x1b[0m", chinese_timestamp);
+  let _ = incremental_computation(&busses);
 }
 
 fn gcd(a: u128, b: u128) -> u128 {
@@ -54,6 +52,42 @@ fn gcd(a: u128, b: u128) -> u128 {
   else { gcd(b % a, a) }
 }
 
+fn lcm(a: u128, b: u128) -> u128 {
+  a * b / gcd(a, b)
+}
+
+fn earliest_timestamp(id: u128, t: u128) -> u128 {
+  (id - t % id) % id
+}
+
+// Based off of an explanation of some trick on Reddit -_-'
+fn incremental_computation(busses: &Vec<(u128, u128)>) -> u128 {
+  let (_, ida) = busses[0];
+  let mut last_timestamp = 0; // start at the first offset of the first bus
+  let mut q = ida;
+  let mut stdout = io::stdout();
+  for &(ob, idb) in &busses[1..] {
+    while earliest_timestamp(idb, last_timestamp) != ob % idb {
+      last_timestamp += q;
+      print!("\r{:?} {}", (ob, idb), last_timestamp);
+      stdout.flush().unwrap();
+    }
+    q = lcm(q, idb);
+    println!();
+  }
+  let ets: Vec<_> = busses.iter()
+                    .map(|&(o, id)| (o, earliest_timestamp(id, last_timestamp), id))
+                    .collect();
+  println!("Answer found: \x1b[1m{}\x1b[0m", last_timestamp);
+  println!("Offsets: {:?}", ets);
+  
+  last_timestamp
+}
+
+// Nothing of this down here worked. I don't know why I'm just never getting the right answer.
+// Surely, of course, I've got something wrong in the calculus.
+// I guess I didn't actually learn that much unfortunately. :/
+/*
 fn egcd(a: u128, b: u128) -> (u128, u128, u128) {
   if a == 0 { (b, 0, 1) }
   else {
@@ -83,3 +117,4 @@ fn chinese_remainder(pairs: &Vec<(u128, u128)>) -> Option<u128> {
   }).sum();
   Some(x % sumod)
 }
+*/
