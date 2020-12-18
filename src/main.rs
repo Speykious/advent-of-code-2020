@@ -10,8 +10,9 @@ mod day10;
 mod day11;
 mod day12;
 mod day13;
+mod day14;
 
 fn main() -> Result<()> {
-  println!("\x1b[1mDay 13\x1b[0m");
-  day13::main()
+  println!("\x1b[1mDay 14\x1b[0m");
+  day14::main()
 }
