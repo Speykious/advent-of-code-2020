@@ -19,17 +19,67 @@ enum Inst {
   Mem(u64, u64),
 }
 
+impl Inst {
+  fn string_to_mask(ms: String) -> Option<Self> {
+    ms.chars().enumerate().fold(
+      Some(Inst::Mask((1 << 36) - 1, 0)),
+      |m, (i, c)| match m {
+        Some(Inst::Mask(mut mand, mut mor)) => {
+          let b = 1 << (35 - i as u64);
+          match c {
+            '1' => mor = mor | b,
+            '0' => mand = mand & !b,
+            'X' => (),
+             _  => return None,
+          }
+          Some(Inst::Mask(mand, mor))
+        },
+        _ => None,
+      }
+    )
+  }
+
+  fn mask_to_string(&self) -> Option<String> {
+    match self {
+      Inst::Mask(mand, mor) => {
+        let mut ms = vec!['X'; 36];
+        for i in 0..36 {
+          let b = 1 << (35 - i);
+          if mand & b == 0 { ms[i] = '0'; }
+          if mor & b > 0 { ms[i] = '1'; }
+        }
+        Some(ms.into_iter().collect())
+      },
+      _ => None,
+    }
+  }
+
+}
+
 impl fmt::Display for Inst {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     match self {
-      Inst::Mask(mand, mor)   =>
-        write!(f, "{}Mask{} {}&& {:036b}{}\n     {}|| {:036b}{}",
-               B, C, YEL, mand, C, RED, mor, C),
+      Inst::Mask(mand, mor) =>
+        write!(f, "{}Mask{} {}{}{}\n  {}&& {:036b}{}\n  {}|| {:036b}{}",
+               B, C, BLU, self.mask_to_string().unwrap(), C, YEL, mand, C, RED, mor, C),
       Inst::Mem(index, value) =>
         write!(f, "{}Mem{}[{}{:08x}{}] = {}{:08x}{}",
                B, C, GRN, index, C, MAG, value, C),
     }
   }
+}
+
+fn execute(insts: &Vec<Inst>) -> HashMap<u64, u64> {
+  let mut memory: HashMap<u64, u64> = HashMap::new();
+  let (mut mand, mut mor) = (0, 0);
+  for &inst in insts {
+    match inst {
+      Inst::Mask(mandi, mori) => { mand = mandi; mor = mori; },
+      Inst::Mem(index, value) => { memory.insert(index, value & mand | mor); }
+    }
+  }
+
+  memory
 }
 
 pub fn main() -> io::Result<()> {
@@ -40,31 +90,26 @@ pub fn main() -> io::Result<()> {
       let split = l.split(" = ").collect::<Vec<_>>();
       let (left, right) = (split[0].to_string(), split[1].to_string());
       if left == "mask" {
-        right.chars().enumerate().fold(
-          Inst::Mask((1 << 36) - 1, 0),
-          |m, (i, c)| match m {
-            Inst::Mask(mut mand, mut mor) => {
-              let b = 1 << (35 - i as u64);
-              match c {
-                '1' => mor = mor | b,
-                '0' => mand = mand & !b,
-                _   => (),
-              }
-              Inst::Mask(mand, mor)
-            },
-            _ => panic!("Impossible...!"),
-          }
-        )
+        Inst::string_to_mask(right).unwrap()
       } else {
         let index: u64 = left[4..left.len()-1].parse().unwrap();
         let value: u64 = right.parse().unwrap();
         Inst::Mem(index, value)
       }
     }).collect();
-  
-  for d in &data {
-    println!("{}", d);
+  let memory = execute(&data);
+  let mut k = 0;
+  println!("{}{:=^143}{}", B, " MEMORY ", C);
+  for (&i, &v) in &memory {
+    if k != 0 && k % 7 == 0 { println!(" |"); }
+    print!(" | {}{:04x} {}:: {}{:09x}{}", GRN, i, RED, YEL, v, C);
+    k += 1;
   }
+  println!(" |");
+  println!("{}{:=^143}{}", B, " END OF MEMORY ", C);
+
+  let answer: u64 = memory.iter().map(|(_, &v)| v).sum();
+  println!("\nMEMORY COLLAPSED: answer is {}{}{}", B, answer, C);
 
   Ok(())
 }
